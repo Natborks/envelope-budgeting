@@ -11,7 +11,7 @@ router.post('/', (req, res, next) => {
     res.send('hello from post')
 })
 
-router.put('/envelopeId', (req, res, next) => {
+router.put('/:envelopeId', (req, res, next) => {
     res.send('hello from put')
 })
 
