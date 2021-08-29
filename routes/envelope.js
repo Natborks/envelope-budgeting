@@ -2,8 +2,11 @@ const express = require('express')
 const app = require('../app')
 const router = express()
 
+const {getAllEnvelopes}= require('../util/util')
 
 router.get('/', (req, res, next) => {
+    const allEnvelopes  = utils.getAllEnvelopes()
+
     res.send('hello from the other side')
 })
 
