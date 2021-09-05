@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const {getAllEnvelopes, addEnvelope, clearAllEnvelopes, updateEnvelope, transferFunds}= require('../util/util')
+const {getAllEnvelopes, addEnvelope, clearAllEnvelopes, updateEnvelope, transferFunds}= require('../../util/util')
 
 describe('util', () => {
     let envelope1 = {}
