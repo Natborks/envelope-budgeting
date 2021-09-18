@@ -9,7 +9,7 @@ const {
     updateEnvelope,
     removeEnvelope,
     transferFunds
-}= require('../util/util')
+}= require('../models/envelopeRepository')
 
 router.param('envelopeId', (req, res, next, params) => {
 

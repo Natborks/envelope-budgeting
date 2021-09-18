@@ -2,7 +2,7 @@ const {assert} = require('chai')
 const request = require('supertest');
 const { response } = require('../app');
 const app = require('../app')
-const {clearAllEnvelopes}= require('../util/util')
+const {clearAllEnvelopes}= require('../models/envelopeRepository')
 
 
 describe('envelope', () => {
@@ -14,7 +14,7 @@ describe('envelope', () => {
     describe('GET request', () => {
       it('returns a 200 status', async () => {
         const response = await request(app).
-        get('/envelopes');
+        get('/api/envelopes');
 
         assert.equal(response.status, 200)
       });
@@ -24,7 +24,7 @@ describe('envelope', () => {
 
         it('creates a new envelope with the correct request body', async () => {
             const response = await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send({'name' : 'fees', 'amount' : 1200})
 
             assert.equal(response.status, 201)
@@ -34,7 +34,7 @@ describe('envelope', () => {
             const envelope = {'name' : 'fees', 'amount' : 300}
 
             const response = await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(envelope)
 
             assert.deepEqual(response.body, envelope)
@@ -45,7 +45,7 @@ describe('envelope', () => {
             const envelope = {'name' : 'food', 'amount' : 500}
 
             const response = await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(envelope)
 
             assert.deepEqual(response.body, envelope)
@@ -55,11 +55,11 @@ describe('envelope', () => {
             const envelope = {'name' : 'food', 'amount' : 500}
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(envelope)
 
             const response = await request(app)
-            .get('/envelopes')
+            .get('/api/envelopes')
 
             assert.deepInclude(response.body, envelope)
         })
@@ -68,7 +68,7 @@ describe('envelope', () => {
             const envelope = {'name' : 'food'}
 
             const response = await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(envelope)
 
             assert.equal(response.status, 400)
@@ -81,11 +81,11 @@ describe('envelope', () => {
             const envelope = {'name' : envelopeName, 'amount' : 500}
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(envelope)
 
             const response = await request(app)
-            .put(`/envelopes/${envelopeName}`)
+            .put(`/api/envelopes/${envelopeName}`)
             .send({'amount' : 1000})
 
             assert.equal(response.status, 200)
@@ -97,11 +97,11 @@ describe('envelope', () => {
             const envelope = {'name' : envelopeName, 'amount' : 1000}
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(envelope)
 
             const response = await request(app)
-            .put(`/envelopes/${envelopeName}`)
+            .put(`/api/envelopes/${envelopeName}`)
             .send({'amount' : 1000})
 
             assert.deepEqual(response.body, expectedResult)
@@ -114,11 +114,11 @@ describe('envelope', () => {
             const envelope = {'name' : envelopeName, 'amount' : 500}
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(envelope)
 
             const response = await request(app)
-            .put(`/envelopes/${envelopeName}`)
+            .put(`/api/envelopes/${envelopeName}`)
             .send({'amount' : 10000})
 
             assert.deepEqual(response.body, expectedResult)
@@ -131,15 +131,15 @@ describe('envelope', () => {
             const envelope = {'name' : envelopeName, 'amount' : 1}
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(envelope)
 
             await request(app)
-            .put(`/envelopes/${envelopeName}`)
+            .put(`/api/envelopes/${envelopeName}`)
             .send({'amount' : 1})
 
             const response = await request(app)
-            .get('/envelopes')
+            .get('/api/envelopes')
 
             console.log(response.body)
 
@@ -155,11 +155,11 @@ describe('envelope', () => {
             const envelope = {'name' : envelopeName, 'amount' : 500}
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(envelope)
 
             const response = await request(app)
-            .delete(`/envelopes/${envelopeName}`)
+            .delete(`/api/envelopes/${envelopeName}`)
 
             assert.equal(response.status, 204)
         })
@@ -170,15 +170,15 @@ describe('envelope', () => {
             const envelope2 = {'name' : 'another_envlope', 'amount' : 100}
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(envelope)
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(envelope2)
 
             const response = await request(app)
-            .delete(`/envelopes/${envelopeName}`)
+            .delete(`/api/envelopes/${envelopeName}`)
 
             assert.notDeepInclude(response.body, envelope)
 
@@ -196,15 +196,15 @@ describe('envelope', () => {
             const toEnvelope = {'name' : toEnvelopeName, 'amount' : 100}
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(fromEnvelope)
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(toEnvelope)
 
             const response = await request(app)
-            .post(`/envelopes/transfer/${fromEnvelopeName}/${toEnvelopeName}`)
+            .post(`/api/envelopes/transfer/${fromEnvelopeName}/${toEnvelopeName}`)
             .send({'amount' : 200})
 
             assert.equal(response.status, 200)
@@ -220,15 +220,15 @@ describe('envelope', () => {
             const toEnvelope = {'name' : toEnvelopeName, 'amount' : 100}
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(fromEnvelope)
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(toEnvelope)
 
             const response = await request(app)
-            .post(`/envelopes/transfer/${wrongFromEnvelope}/${toEnvelopeName}`)
+            .post(`/api/envelopes/transfer/${wrongFromEnvelope}/${toEnvelopeName}`)
             .send({'amount' : 200})
 
             assert.equal(response.status, 404)
@@ -244,15 +244,15 @@ describe('envelope', () => {
             const toEnvelope = {'name' : toEnvelopeName, 'amount' : 100}
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(fromEnvelope)
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(toEnvelope)
 
             const response = await request(app)
-            .post(`/envelopes/transfer/${fromEnvelopeName}/${wrongToEnvelope}`)
+            .post(`/api/envelopes/transfer/${fromEnvelopeName}/${wrongToEnvelope}`)
             .send({'amount' : 200})
 
             assert.equal(response.status, 404)
@@ -267,15 +267,15 @@ describe('envelope', () => {
             const expectedResult = [{'name' : fromEnvelopeName, 'amount' : 200}, {'name' : toEnvelopeName, 'amount' : 400}]
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(fromEnvelope)
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(toEnvelope)
 
             const response = await request(app)
-            .post(`/envelopes/transfer/${fromEnvelopeName}/${toEnvelopeName}`)
+            .post(`/api/envelopes/transfer/${fromEnvelopeName}/${toEnvelopeName}`)
             .send({amount : 300})
 
             assert.deepEqual(response.body, expectedResult)
@@ -291,15 +291,15 @@ describe('envelope', () => {
             const expectedResult = [{'name' : fromEnvelopeName, 'amount' : 200}, {'name' : toEnvelopeName, 'amount' : 400}]
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(fromEnvelope)
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(toEnvelope)
 
             const response = await request(app)
-            .post(`/envelopes/transfer/${fromEnvelopeName}/${toEnvelopeName}`)
+            .post(`/api/envelopes/transfer/${fromEnvelopeName}/${toEnvelopeName}`)
             .send({amount : 300})
 
             assert.deepEqual(response.body, expectedResult)
@@ -315,15 +315,15 @@ describe('envelope', () => {
             const expectedResult = [{'name' : fromEnvelopeName, 'amount' : 400}, {'name' : toEnvelopeName, 'amount' : 200}]
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(fromEnvelope)
 
             await request(app)
-            .post('/envelopes')
+            .post('/api/envelopes')
             .send(toEnvelope)
 
             const response = await request(app)
-            .post(`/envelopes/transfer/${fromEnvelopeName}/${toEnvelopeName}`)
+            .post(`/api/envelopes/transfer/${fromEnvelopeName}/${toEnvelopeName}`)
             .send({amount : 100})
 
             assert.deepEqual(response.body, expectedResult)
