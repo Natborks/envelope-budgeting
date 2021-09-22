@@ -1,27 +1,40 @@
 const envelopes = []
+const { requestLogger } = require('../../part3-notes-backend/utils/middleware')
+const Envelope = require('../models/envelope')
+const InsufficientFunds = require('../Errors/InsufficientFunds')
+const logger = require('../util/logger')
 
-function getAllEnvelopes() {
-    return envelopes
+async function getAllEnvelopes() {
+     try {
+        const allEnvelopes = await Envelope.find()
+
+        return allEnvelopes
+    } catch(error) {
+        throw error
+    }
 }
 
 
-function addEnvelope(envelope) {
-    const isValidEnvelope = validateEnvelope(envelope)
+async function addEnvelope(envelope) {
 
-    if(isValidEnvelope) {
-        envelopes.push(envelope)
-        return envelope
-    } else {
-        return false
+    const envelopeObject = new Envelope(envelope)
+
+    try {
+        const response = await envelopeObject.save()
+
+        return response.toJSON()
+    } catch (error) {
+       throw error
     }
 
 }
 
-function removeEnvelope(envelope) {
-    const pos = envelopes.indexOf(envelope)
-    const removedItem = envelopes.splice(pos, 1)
-
-    return removedItem;
+async function removeEnvelope(envelope) {
+    try{
+        await Envelope.deleteOne({id : envelope.id})
+    } catch (error) {
+        throw error
+    }
 }
 
 function clearAllEnvelopes() {
@@ -30,41 +43,41 @@ function clearAllEnvelopes() {
     }
 }
 
-function updateEnvelope(envelope, amount) {
-    if(envelope){
-        envelope.amount += amount
-        return envelope
+async function updateEnvelope(envelope, amount) {
+    envelope.amount += amount
+    try{
+        const response = await envelope.save()
+
+        return response.toJSON()
+    } catch (error) {
+        throw error
+    }
+}
+
+async function findEnvelope(envelopeId) {
+    try {
+        const envelope = await Envelope.findById(envelopeId);
+
+        return envelope;
+    } catch (error) {
+        throw error
+    }
+}
+
+async function transferFunds(sourceEnvelope, destinationEnvelope, amount) {
+    if(sourceEnvelope.amount >= amount) {
+
+        sourceEnvelope.amount -= amount
+        destinationEnvelope.amount += amount
+
+        await sourceEnvelope.save()
+        await destinationEnvelope.save()
+    } else {
+        throw new InsufficientFunds("Not enough funds in source envelope")
     }
 
-    return undefined
-}
-
-function findEnvelope(name) {
-    return envelopes.find(envelope => name == envelope.name)
-}
-
-function transferFunds(source, destination, amount) {
-    const sourceEnvelope = findEnvelope(source.name)
-    const destinationEnvelope = findEnvelope(destination.name)
-
-    if(sourceEnvelope && destinationEnvelope) {
-        if(sourceEnvelope.amount >= amount) {
-            sourceEnvelope.amount -= amount
-            destinationEnvelope.amount += amount
-            return envelopes
-        } else {
-            throw new Error("Not enough funds in source in source envelope")
-        }
-    }
 
     return undefined
-}
-
-function validateEnvelope(envelope) {
-    const properytiesPresesnt = envelope.hasOwnProperty('name') &&  envelope.hasOwnProperty('amount')
-    const isEnvelopePresent = findEnvelope(envelope.name)
-
-    return properytiesPresesnt && !isEnvelopePresent
 }
 
 module.exports = {

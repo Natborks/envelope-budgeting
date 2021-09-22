@@ -1,95 +1,114 @@
 const express = require('express')
 const app = require('../app')
 const router = express()
+const Envelope = require('../models/envelope')
+const envelopeRepository = require('../models/envelopeRepository')
 
-const {
-    getAllEnvelopes,
-    addEnvelope,
-    findEnvelope,
-    updateEnvelope,
-    removeEnvelope,
-    transferFunds
-}= require('../models/envelopeRepository')
+router.param('envelopeId', async (req, res, next, params) => {
 
-router.param('envelopeId', (req, res, next, params) => {
-
-    const envelope = findEnvelope(params)
-    if(envelope) {
-        req.envelope = envelope
-        next()
-    } else {
-        res.status(404).send('Envelope not found')
+    try {
+        const envelope = await envelopeRepository.findEnvelope(params)
+        if(envelope) {
+            req.envelope = envelope
+            next()
+        }else {
+            res.status(404).end()
+        }
+    } catch (error) {
+        next(error)
     }
 })
 
-router.param('from', (req, res, next, params) => {
-    const envlope = findEnvelope(params)
+router.param('from', async (req, res, next, params) => {
+    try {
+        const envelope = await envelopeRepository.findEnvelope(params)
+        if(envelope){
+            req.fromEnvelope = envelope
+            next()
+        } else {
+            res.status(404).end()
+        }
 
-    if(envlope){
-        req.fromEnvelope = envlope
-        next()
-    } else {
-        res.status(404).send('From envelope not found')
+    } catch (error) {
+        next(error)
     }
 })
 
-router.param('to', (req, res, next, params) => {
-    const envelope = findEnvelope(params)
-
-    if(envelope){
-        req.toEnvelope = envelope
-        next()
-    } else {
-        res.status(404).send('To envelope not found')
+router.param('to', async (req, res, next, params) => {
+    try{
+        const envelope = await envelopeRepository.findEnvelope(params)
+        if(envelope) {
+            req.toEnvelope = envelope
+            next()
+        } else {
+            res.status(404).end()
+        }
+    } catch (error) {
+        next(error)
     }
+
 })
 
-router.get('/', (req, res, next) => {
-    const allEnvelopes  = getAllEnvelopes()
+router.get('/', async (req, res, next) => {
+    try{
+        const allEnvelopes = await envelopeRepository.getAllEnvelopes()
 
-    res.send(allEnvelopes)
+        res.send(allEnvelopes)
+    } catch (error) {
+        next(error)
+    }
+
 })
 
 
-router.post('/', (req, res, next) => {
-    const envelope = req.body
+router.post('/', async (req, res, next) => {
 
-    const isAddedEnvelope = addEnvelope(envelope)
+    try{
+        const envelope = await envelopeRepository.addEnvelope(req.body)
 
-    if(isAddedEnvelope) {
         res.status(201).send(envelope)
-    } else {
-        res.status(400).send('Invalid Envelope')
+    } catch (error) {
+        next(error)
     }
 
 })
 
-router.post('/transfer/:from/:to', (req, res, next) => {
+router.post('/transfer/:from/:to', async (req, res, next) => {
     const fromEnvelope = req.fromEnvelope
     const toEnvelope = req.toEnvelope
     const amount = req.body.amount
 
-    const envelopes = transferFunds(fromEnvelope, toEnvelope, amount)
+    try{
+        await envelopeRepository.transferFunds(fromEnvelope, toEnvelope, amount)
+        res.send()
+    } catch (error) {
+        next(error)
+    }
 
-    res.send(envelopes)
+
+
 })
 
-router.put('/:envelopeId', (req, res, next) => {
+router.put('/:envelopeId', async (req, res, next) => {
     const requestEnvelope = req.envelope
     const amount = req.body.amount
-    const envelope = updateEnvelope(requestEnvelope, amount)
+    try{
+        const envelope = await envelopeRepository.updateEnvelope(requestEnvelope, amount)
 
-    res.send(envelope)
+        res.status(200).json(envelope)
+    } catch(error) {
+        next(error)
+    }
 })
 
-router.delete('/:envelopeId', (req, res, next) =>{
+router.delete('/:envelopeId', async (req, res, next) =>{
     const requestEnvelope = req.envelope
-    const removedItem = removeEnvelope(requestEnvelope)
+    try{
+        await envelopeRepository.removeEnvelope(requestEnvelope)
 
-    if(removedItem) {
-        res.status(204).send()
-    } else {
-        res.status(500).send('Error: Could not remove envelope')
+        res.status(204).end()
+    } catch (error) {
+        next (error)
     }
 
 })
