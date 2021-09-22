@@ -20,7 +20,7 @@ mongoose.connect(config.MONGODB_URI)
 
 app.use(requestInfologger('dev'))
 app.use(express.json())
-app.use(cors)
+app.use(cors())
 app.use(express.urlencoded({ extended: false }))
 
 app.use('/api/envelopes', envelopeRouter)
