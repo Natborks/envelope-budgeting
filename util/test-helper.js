@@ -1,40 +1,40 @@
 const Envelope = require('../models/envelope')
 const sampleEnvelopes = [
-    {
-        "name": "food",
-        "amount": 4000
-    },
-    {
-        "name": "fees",
-        "amount": 30000
-    }
+  {
+    name: 'food',
+    amount: 4000
+  },
+  {
+    name: 'fees',
+    amount: 30000
+  }
 ]
 
 const envelopesInDb = async () => {
-    const envelopes = await Envelope.find()
-    return envelopes.map(envelope => envelope.toJSON())
+  const envelopes = await Envelope.find()
+  return envelopes.map(envelope => envelope.toJSON())
 }
 
 const getFirstEnvelopeInDb = async () => {
-    const envelopes = await envelopesInDb()
-    return envelopes[0]
+  const envelopes = await envelopesInDb()
+  return envelopes[0]
 }
 
 const getNonExsistentId = async () => {
-    let envelope = new Envelope({
-      name : "toBeDeleted",
-      amount : 100
-    })
+  const envelope = new Envelope({
+    name: 'toBeDeleted',
+    amount: 100
+  })
 
-    toBeRemoved = await envelope.save()
-    toBeRemoved.remove()
+  const toBeRemoved = await envelope.save()
+  toBeRemoved.remove()
 
-    return toBeRemoved._id.toString()
+  return toBeRemoved._id.toString()
 }
 
 module.exports = {
-    sampleEnvelopes,
-    envelopesInDb,
-    getFirstEnvelopeInDb,
-    getNonExsistentId
+  sampleEnvelopes,
+  envelopesInDb,
+  getFirstEnvelopeInDb,
+  getNonExsistentId
 }
