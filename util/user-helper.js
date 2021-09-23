@@ -1,4 +1,5 @@
 const User = require('../models/user')
+const authUtils = require('../util/auth')
 
 const sampleUsers = [
   {
@@ -14,14 +15,18 @@ const sampleUsers = [
   {
     username: 'hash',
     email: 'hash@email.com',
-    passwordHash: '1234'
+    password: '1234'
   }
 ]
 const createSampleUsers = async () => {
+  const secretPassword = await authUtils.createPasswordHash('sekret')
+
+  sampleUsers[0].passwordHash = secretPassword
   let user = new User(sampleUsers[0])
 
   await user.save()
 
+  sampleUsers[1].passwordHash = secretPassword
   user = new User(sampleUsers[1])
 
   await user.save()
@@ -39,9 +44,19 @@ const getUsersInDb = async () => {
   return usersInDb
 }
 
-const getSampleUer = async () => {
+const getSampleUser = async () => {
   const response = await getUsersInDb()
   return response[0]
+}
+
+const getSampleUserRawResponse = async (userId) => {
+  const rawResponse = await User.findById(userId)
+
+  return rawResponse
+}
+
+const getUnsavedUser = () => {
+  return sampleUsers[2]
 }
 
 module.exports = {
@@ -49,5 +64,7 @@ module.exports = {
   getUsersInDb,
   createSampleUsers,
   removeAllUsersFromDb,
-  getSampleUer
+  getSampleUser,
+  getUnsavedUser,
+  getSampleUserRawResponse
 }

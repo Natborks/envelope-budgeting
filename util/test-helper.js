@@ -1,4 +1,5 @@
 const Envelope = require('../models/envelope')
+const { sampleUsers } = require('./user-helper')
 const sampleEnvelopes = [
   {
     name: 'food',

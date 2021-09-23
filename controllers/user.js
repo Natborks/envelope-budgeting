@@ -1,5 +1,6 @@
 const User = require('../models/user')
 const userRouter = require('express').Router()
+const authUtils = require('../util/auth')
 
 userRouter.param('userId', async (request, response, next, params) => {
   try {
@@ -26,7 +27,13 @@ userRouter.get('/', async (request, response, next) => {
 userRouter.post('/', async (request, reponse, next) => {
   const body = request.body
 
-  const user = new User(body)
+  const passwordHash = await authUtils.createPasswordHash(body.password)
+
+  const user = new User({
+    username: body.username,
+    email: body.email,
+    passwordHash
+  })
 
   try {
     const response = await user.save()
