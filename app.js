@@ -7,6 +7,7 @@ const config = require('./util/config')
 const cors = require('cors')
 
 const envelopeRouter = require('./controllers/envelope')
+const userRouter = require('./controllers/user')
 
 const app = express()
 
@@ -23,6 +24,7 @@ app.use(express.json())
 app.use(cors())
 app.use(express.urlencoded({ extended: false }))
 
+app.use('/api/users', userRouter)
 app.use('/api/envelopes', envelopeRouter)
 
 // catch 404 and forward to error handler
