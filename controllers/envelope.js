@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express()
 const envelopeRepository = require('../models/envelopeRepository')
+const User = require('../models/user')
 
 router.param('envelopeId', async (req, res, next, params) => {
   try {
@@ -55,6 +56,18 @@ router.get('/', async (req, res, next) => {
 })
 
 router.post('/', async (req, res, next) => {
+  const userId = req.body.user
+
+  try {
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(404).json('Did not find user with given id')
+    }
+  } catch (error) {
+    next(error)
+  }
+
   try {
     const envelope = await envelopeRepository.addEnvelope(req.body)
 

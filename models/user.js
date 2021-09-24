@@ -14,7 +14,11 @@ const userSchema = new mongoose.Schema({
   passwordHash: {
     type: String,
     required: true
-  }
+  },
+  envelopes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Envelope'
+  }]
 })
 
 userSchema.set('toJSON', {

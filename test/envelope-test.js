@@ -5,16 +5,14 @@ const app = require('../app')
 const mongoose = require('mongoose')
 const Envelope = require('../models/envelope')
 const helper = require('../util/test-helper')
+const userHelper = require('../util/user-helper')
 
 describe('envelope', () => {
   beforeEach(async () => {
     await Envelope.deleteMany({})
 
-    let envelopeObject = new Envelope(helper.sampleEnvelopes[0])
-    await envelopeObject.save()
-
-    envelopeObject = new Envelope(helper.sampleEnvelopes[1])
-    await envelopeObject.save()
+    await helper.removeAllUSersInDb()
+    await helper.createSamplesEnvelopes()
   })
 
   describe('GET request', () => {
@@ -28,35 +26,62 @@ describe('envelope', () => {
     it('checks correct envelope length', async () => {
       const expectedLength = helper.sampleEnvelopes.length
 
-      const response = await helper.envelopesInDb()
+      const response = await await request(app)
+        .get('/api/envelopes')
 
-      assert.equal(response.length, expectedLength)
+      assert.equal(response.body.length, expectedLength)
+    })
+
+    it('finds userId property in envelopes', async () => {
+      const response = await await request(app)
+        .get('/api/envelopes')
+
+      const envelopeInDb = response.body[0]
+      assert.isTrue(Object.prototype.hasOwnProperty.call(envelopeInDb, 'user'))
     })
   })
 
-  describe('POST request', () => {
+  describe('POST /users', () => {
     it('creates a new envelope with the correct request body', async () => {
+      const sampleUser = await helper.getSampleUser()
       const response = await request(app)
         .post('/api/envelopes')
-        .send({ name: 'fees', amount: 1200 })
+        .send({ name: 'fees', amount: 1200, user: sampleUser.id })
 
       assert.equal(response.status, 201)
     })
 
-    it('returns newly created envelope', async () => {
-      const envelope = { name: 'gym', amount: 300 }
+    it('returns newly created envelope associated user', async () => {
+      const sampleUser = await helper.getSampleUser()
+      const envelope = { name: 'gym', amount: 300, user: sampleUser.id }
 
-      await request(app)
+      const response = await request(app)
         .post('/api/envelopes')
         .send(envelope)
 
       const content = await helper.envelopesInDb()
       const envelopeNames = content.map(envelope => envelope.name)
       assert.deepInclude(envelopeNames, envelope.name)
+      assert.deepEqual(response.body.user, sampleUser.id)
+    })
+
+    it('does not create envelope when user id is wrong', async () => {
+      const nonExsitentId = await helper.getNonExsistentUserId()
+      const envelope = { name: 'gym', amount: 300, user: nonExsitentId }
+
+      const response = await request(app)
+        .post('/api/envelopes')
+        .send(envelope)
+
+      assert.equal(response.status, 404)
+      const content = await helper.envelopesInDb()
+      const envelopeNames = content.map(envelope => envelope.name)
+      assert.notDeepInclude(envelopeNames, envelope.name)
     })
 
     it('does not save invalid envelope', async () => {
-      const envelope = { name: 'food' }
+      const sampleUser = await userHelper.getSampleUser()
+      const envelope = { name: 'food', user: sampleUser.id }
 
       const response = await request(app)
         .post('/api/envelopes')
@@ -98,7 +123,9 @@ describe('envelope', () => {
 
       const updatedEnvelopes = await helper.envelopesInDb()
 
-      assert.deepInclude(updatedEnvelopes, response.body)
+      const searchResult = helper.findEnvelopeInResults(updatedEnvelopes, response.body)
+
+      assert.isTrue(Boolean(searchResult))
     }, 100000)
   })
 
@@ -183,12 +210,9 @@ describe('envelope', () => {
         .send({ amount: 300 })
 
       envelopes = await helper.envelopesInDb()
+      const isEnvelopePresent = helper.findEnvelopeInResults(envelopes, expectedResult)
 
-      assert.deepInclude(envelopes, expectedResult)
+      assert.isTrue(Boolean(isEnvelopePresent))
     })
-  })
-
-  after(() => {
-    mongoose.connection.close()
   })
 })

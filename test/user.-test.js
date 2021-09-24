@@ -37,6 +37,15 @@ describe('GET /users', () => {
 
     assert.deepInclude(reposne.body, sampleUser)
   })
+
+  it('returns a list of users with associated notes', async () => {
+    const response = await api
+      .get('/api/users')
+
+    const sampleUser = response.body[0]
+
+    assert.isTrue(Object.prototype.hasOwnProperty.call(sampleUser, 'envelopes'))
+  })
 })
 
 describe('POST /users', () => {
@@ -98,8 +107,4 @@ describe('/GET /:userId', () => {
     assert.equal(response.status, 200)
     assert.deepEqual(response.body, user)
   })
-})
-
-after(() => {
-  mongoose.connection.close()
 })

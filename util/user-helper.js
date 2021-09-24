@@ -45,8 +45,15 @@ const getUsersInDb = async () => {
 }
 
 const getSampleUser = async () => {
-  const response = await getUsersInDb()
-  return response[0]
+  const user = new User({
+    username: 'gh',
+    email: 'gh@email.com',
+    passwordHash: 1235
+  })
+
+  const response = await user.save()
+
+  return response.toJSON()
 }
 
 const getSampleUserRawResponse = async (userId) => {
@@ -59,6 +66,20 @@ const getUnsavedUser = () => {
   return sampleUsers[2]
 }
 
+const getNonExsistentId = async () => {
+  const hashedPassword = await authUtils.createPasswordHash('sekret')
+  const user = new User({
+    username: 'toBeDeleted',
+    email: 'toBeDeleted@email.com',
+    passwordHash: hashedPassword
+  })
+
+  const toBeRemoved = await user.save()
+  await toBeRemoved.remove()
+
+  return toBeRemoved.id
+}
+
 module.exports = {
   sampleUsers,
   getUsersInDb,
@@ -66,5 +87,6 @@ module.exports = {
   removeAllUsersFromDb,
   getSampleUser,
   getUnsavedUser,
-  getSampleUserRawResponse
+  getSampleUserRawResponse,
+  getNonExsistentId
 }
