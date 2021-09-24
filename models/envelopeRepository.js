@@ -5,6 +5,7 @@ const InsufficientFunds = require('../Errors/InsufficientFunds')
 async function getAllEnvelopes () {
   try {
     const allEnvelopes = await Envelope.find()
+      .populate('user', { username: 1, email: 1 })
     return allEnvelopes
   } catch (error) {
     throw error
